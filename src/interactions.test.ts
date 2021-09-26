@@ -1,25 +1,23 @@
 import { GetInteraction, ParamsObject } from './interaction'
 
-describe('interactions', function () {
+describe('interactions', function() {
   describe('accessor', () => {
     describe('get', () => {
       test('no parameters', async () => {
         const accessor = jest.fn().mockImplementation((...args) => args)
-        const interaction: GetInteraction<
-          { name: string },
-          ParamsObject.NoParams
-        > = {
+        const interaction: GetInteraction<{ name: string },
+          ParamsObject.NoParams> = {
           withRequest: {
             path: '/api/test',
             params: { path: {}, query: {}, headers: {} },
-            headers: {},
+            headers: {}
           },
           responseExamples: {
             success: {
               body: { name: 'someName' },
-              status: 200,
-            },
-          },
+              status: 200
+            }
+          }
         }
         await GetInteraction(
           interaction,
@@ -36,21 +34,19 @@ describe('interactions', function () {
 
       test('path parameters', async () => {
         const accessor = jest.fn().mockImplementation((...args) => args)
-        const interaction: GetInteraction<
-          { name: string },
-          ParamsObject.PathParams<{ id: string }>
-        > = {
+        const interaction: GetInteraction<{ name: string },
+          ParamsObject.PathParams<{ id: string }>> = {
           withRequest: {
             path: '/api/test',
             params: { path: { id: 'id' }, query: {}, headers: {} },
-            headers: {},
+            headers: {}
           },
           responseExamples: {
             success: {
               body: { name: 'someName' },
-              status: 200,
-            },
-          },
+              status: 200
+            }
+          }
         }
         await GetInteraction(
           interaction,
@@ -67,25 +63,23 @@ describe('interactions', function () {
 
       test('query parameters', async () => {
         const accessor = jest.fn().mockImplementation((...args) => args)
-        const interaction: GetInteraction<
-          { name: string },
-          ParamsObject.QueryParams<{ search: string; key: string }>
-        > = {
+        const interaction: GetInteraction<{ name: string },
+          ParamsObject.QueryParams<{ search: string; key: string }>> = {
           withRequest: {
             path: '/api/test',
             params: {
               path: {},
               query: { search: 'search', key: 'key' },
-              headers: {},
+              headers: {}
             },
-            headers: {},
+            headers: {}
           },
           responseExamples: {
             success: {
               body: { name: 'someName' },
-              status: 200,
-            },
-          },
+              status: 200
+            }
+          }
         }
 
         await GetInteraction(
@@ -98,6 +92,42 @@ describe('interactions', function () {
           '/api/test/?search=abcde&key=somekey',
           undefined,
           {}
+        )
+      })
+
+      test.skip('ignore extra parameters', async () => {
+        const accessor = jest.fn().mockImplementation((...args) => args)
+        const interaction: GetInteraction<{ name: string },
+          ParamsObject.PathQueryHeaderParams<{ path: string }, { query: string }, { header: string }>> = {
+          withRequest: {
+            path: '/api/test',
+            params: {
+              path: { path: 'somepath' },
+              query: { query: 'somequery' },
+              headers: { header: 'someheader' }
+            },
+            headers: {}
+          },
+          responseExamples: {
+            success: {
+              body: { name: 'someName' },
+              status: 200
+            }
+          }
+        }
+        const path = { path: 'p', extra: 'd' }
+        const query = { query: 'q', extra: 'd' }
+        const headers = { header: 'h', extra: 'd' }
+        await GetInteraction(
+          interaction,
+          { path, query, headers },
+          accessor
+        )
+        expect(accessor).toHaveBeenCalledWith(
+          'GET',
+          '/api/test/p/?query=q',
+          undefined,
+          { header: 'h' }
         )
       })
     })

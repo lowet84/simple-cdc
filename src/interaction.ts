@@ -1,7 +1,5 @@
-export interface BaseInteraction<
-  TResponseBody,
-  TParams extends ParamsObject.AllParams
-> {
+export interface BaseInteraction<TResponseBody,
+  TParams extends ParamsObject.AllParams> {
   description?: string
   withRequest: {
     path: string
@@ -29,28 +27,25 @@ export namespace ParamsObject {
     headers: ParamsValues
   }
   export type NoParams = { path: {}; query: {}; headers: {} }
+  export type PathQueryHeaderParams<TPath extends ParamsValues,
+    TQuery extends ParamsValues,
+    THeader extends ParamsValues> = { path: TPath; query: TQuery; headers: THeader }
   export type PathParams<TPath extends ParamsValues> = {
     path: TPath
     query: {}
     headers: {}
   }
-  export type PathQueryParams<
-    TPath extends ParamsValues,
-    TQuery extends ParamsValues
-  > = { path: TPath; query: TQuery; headers: {} }
-  export type PathHeaderParams<
-    TPath extends ParamsValues,
-    THeaders extends ParamsValues
-  > = { path: TPath; query: {}; headers: THeaders }
+  export type PathQueryParams<TPath extends ParamsValues,
+    TQuery extends ParamsValues> = { path: TPath; query: TQuery; headers: {} }
+  export type PathHeaderParams<TPath extends ParamsValues,
+    THeaders extends ParamsValues> = { path: TPath; query: {}; headers: THeaders }
   export type QueryParams<T extends ParamsValues> = {
     path: {}
     query: T
     headers: {}
   }
-  export type QueryHeaderParams<
-    TQuery extends ParamsValues,
-    THeaders extends ParamsValues
-  > = { path: {}; query: TQuery; headers: THeaders }
+  export type QueryHeaderParams<TQuery extends ParamsValues,
+    THeaders extends ParamsValues> = { path: {}; query: TQuery; headers: THeaders }
   export type HeaderParams<T extends ParamsValues> = {
     path: {}
     query: {}
@@ -58,11 +53,9 @@ export namespace ParamsObject {
   }
 }
 
-export interface RequestBodyInteraction<
-  TResponseBody,
+export interface RequestBodyInteraction<TResponseBody,
   TParams extends ParamsObject.AllParams,
-  TRequestBody
-> extends BaseInteraction<TResponseBody, TParams> {
+  TRequestBody> extends BaseInteraction<TResponseBody, TParams> {
   request: {
     path: string
     params: TParams
@@ -71,27 +64,23 @@ export interface RequestBodyInteraction<
   }
 }
 
-export interface GetInteraction<
-  TResponseBody,
-  TParams extends ParamsObject.AllParams
-> extends BaseInteraction<TResponseBody, TParams> {}
+export interface GetInteraction<TResponseBody,
+  TParams extends ParamsObject.AllParams> extends BaseInteraction<TResponseBody, TParams> {
+}
 
-export interface DeleteInteraction<
-  TResponseBody,
-  TParams extends ParamsObject.AllParams
-> extends BaseInteraction<TResponseBody, TParams> {}
+export interface DeleteInteraction<TResponseBody,
+  TParams extends ParamsObject.AllParams> extends BaseInteraction<TResponseBody, TParams> {
+}
 
-export interface PostInteraction<
-  TResponseBody,
+export interface PostInteraction<TResponseBody,
   TParams extends ParamsObject.AllParams,
-  TRequestBody
-> extends RequestBodyInteraction<TResponseBody, TParams, TRequestBody> {}
+  TRequestBody> extends RequestBodyInteraction<TResponseBody, TParams, TRequestBody> {
+}
 
-export interface PutInteraction<
-  TResponseBody,
+export interface PutInteraction<TResponseBody,
   TParams extends ParamsObject.AllParams,
-  TRequestBody
-> extends RequestBodyInteraction<TResponseBody, TParams, TRequestBody> {}
+  TRequestBody> extends RequestBodyInteraction<TResponseBody, TParams, TRequestBody> {
+}
 
 export function getUrl(
   interaction: BaseInteraction<any, ParamsObject.AllParams>,
@@ -106,11 +95,9 @@ export function getUrl(
   }`
 }
 
-export function GetInteraction<
-  TBody,
+export function GetInteraction<TBody,
   TParams extends ParamsObject.AllParams,
-  TAccessor
->(
+  TAccessor>(
   interaction: GetInteraction<TBody, TParams>,
   params: TParams,
   accessor: AccessorMethod<TAccessor>
@@ -118,11 +105,9 @@ export function GetInteraction<
   return accessor('GET', getUrl(interaction, params), undefined, params.headers)
 }
 
-export function DeleteInteraction<
-  TBody,
+export function DeleteInteraction<TBody,
   TParams extends ParamsObject.AllParams,
-  TAccessor
->(
+  TAccessor>(
   interaction: DeleteInteraction<TBody, TParams>,
   params: TParams,
   accessor: AccessorMethod<TAccessor>
@@ -130,12 +115,10 @@ export function DeleteInteraction<
   return accessor('DELETE', getUrl(interaction, params), undefined, params.headers)
 }
 
-export function PostInteraction<
-  TResponseBody,
+export function PostInteraction<TResponseBody,
   TParams extends ParamsObject.AllParams,
   TRequestBody,
-  TAccessor
->(
+  TAccessor>(
   interaction: PostInteraction<TResponseBody, TParams, TRequestBody>,
   requestBody: TRequestBody,
   params: TParams,
@@ -144,12 +127,10 @@ export function PostInteraction<
   return accessor('POST', getUrl(interaction, params), requestBody, params.headers)
 }
 
-export function PutInteraction<
-  TResponseBody,
+export function PutInteraction<TResponseBody,
   TParams extends ParamsObject.AllParams,
   TRequestBody,
-  TAccessor
->(
+  TAccessor>(
   interaction: PutInteraction<TResponseBody, TParams, TRequestBody>,
   requestBody: TRequestBody,
   params: TParams,
@@ -181,7 +162,8 @@ export const createMockStore = (interactions: InteractionsCollection) => {
     url: string,
     body: any,
     headers: ParamsObject.ParamsValues
-  ) {}
+  ) {
+  }
 
   function setState(interactionKey: string, responseKey: string) {
     if (!interactions[interactionKey])
