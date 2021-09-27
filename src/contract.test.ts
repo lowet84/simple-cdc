@@ -1,30 +1,7 @@
-import { Contract, GetContract } from './Contract'
+import { Contract, DeleteContract, GetContract, PostContract, PutContract } from './Contract'
 import * as path from 'path'
 
 describe('Contract', () => {
-  test('Create contract', () => {
-    const contract = new Contract(
-      'Description',
-      'GET',
-      {
-        headers: {},
-        path: '/api/test',
-        params: { path: { p: 'somepath' }, query: { q: 'somequery' }, header: { h: 'someheader' } }
-      },
-      undefined,
-      {
-        success: {
-          body: { name: 'myName' },
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        }
-      }
-    )
-    const accessor = jest.fn()
-    contract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, undefined, accessor)
-    expect(accessor).toHaveBeenCalledWith('GET', '/api/test/path?q=query', { 'h': 'header' }, undefined)
-  })
-
   test('Get', () => {
     const getContract = new GetContract('Description', {
       headers: {},
@@ -40,5 +17,58 @@ describe('Contract', () => {
     const accessor = jest.fn()
     getContract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, accessor)
     expect(accessor).toHaveBeenCalledWith('GET', '/api/test/path?q=query', { 'h': 'header' }, undefined)
+  })
+
+  test('Delete', () => {
+    const getContract = new DeleteContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: {} }
+    }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const accessor = jest.fn()
+    getContract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, accessor)
+    expect(accessor).toHaveBeenCalledWith('DELETE', '/api/test/path?q=query', { 'h': 'header' }, undefined)
+  })
+
+  test('Post', () => {
+    const getContract = new PostContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: {} }
+    }, { id: 'someId' }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const accessor = jest.fn()
+    getContract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, { id: 'myId' }, accessor)
+    expect(accessor).toHaveBeenCalledWith('POST', '/api/test/path?q=query', { 'h': 'header' }, { id: 'myId' })
+  })
+
+  test('Put', () => {
+    const getContract = new PutContract('Description', {
+        headers: {},
+        path: '/api/test',
+        params: { path: {}, header: {}, query: {} }
+      },
+      { id: 'someId' },
+      {
+        success: {
+          body: { name: 'myName' },
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        }
+      })
+    const accessor = jest.fn()
+    getContract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, { id: 'myId' }, accessor)
+    expect(accessor).toHaveBeenCalledWith('PUT', '/api/test/path?q=query', { 'h': 'header' }, { id: 'myId' })
   })
 })
