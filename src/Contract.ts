@@ -21,12 +21,15 @@ export interface Request<TPathParams extends Params, TQueryParams extends Params
 }
 
 export abstract class Contract<TPathParams extends Params, TQueryParams extends Params, THeaderParams extends Params, TResponseBody, TRequestBody> {
+  public method: Method
+
   protected constructor(
     private description: string,
-    private method: Method,
+    method: Method,
     private request: Request<TPathParams, TQueryParams, THeaderParams>,
     private requestBody: TRequestBody,
     private responseExamples: { [index: string]: ResponseExample<TResponseBody> }) {
+    this.method = method
   }
 
   protected async BaseFetch<T>(pathParams: TPathParams, queryParams: TQueryParams, headersParams: THeaderParams, requestBody: TRequestBody, callback: (method: Method, url: string, headers: Params, body: TRequestBody) => Promise<T>) {
@@ -92,4 +95,17 @@ export class PutContract<TPathParams extends Params, TQueryParams extends Params
   public async Fetch<T>(pathParams: TPathParams, queryParams: TQueryParams, headersParams: THeaderParams, body: TRequestBody, callback: (method: Method, url: string, headers: Params) => Promise<T>) {
     return await this.BaseFetch(pathParams, queryParams, headersParams, body, callback)
   }
+}
+
+export const createMockStore = (contracts: {
+  [index: string]: Contract<any, any, any, any, any>
+}) => {
+  const urlMatchesContract = (url: string, contract: Contract<any, any, any, any, any>) => {
+    return true
+  }
+  const getResponse = (method: Method, url: string) => {
+    const contract = Object.values(contracts).filter(c => c.method === method).find(c => urlMatchesContract(url, c))
+
+  }
+  return { getResponse }
 }

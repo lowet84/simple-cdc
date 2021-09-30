@@ -1,4 +1,4 @@
-import { Contract, DeleteContract, GetContract, PostContract, PutContract } from './Contract'
+import { Contract, createMockStore, DeleteContract, GetContract, PostContract, PutContract } from './Contract'
 import * as path from 'path'
 
 describe('Contract', () => {
@@ -70,5 +70,38 @@ describe('Contract', () => {
     const accessor = jest.fn()
     getContract.Fetch({ p: 'path' }, { q: 'query' }, { h: 'header' }, { id: 'myId' }, accessor)
     expect(accessor).toHaveBeenCalledWith('PUT', '/api/test/path?q=query', { 'h': 'header' }, { id: 'myId' })
+  })
+
+  test('Get mock response', () => {
+    const response = {
+      body: { name: 'myName' },
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    }
+    const getContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: {} }
+    }, {
+      success: response
+    })
+    const mockResponse = getContract.GetMockResponse('success')
+    expect(mockResponse).toStrictEqual(response)
+  })
+
+  test('Mock store', () => {
+    const getContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: {} }
+    }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const store = createMockStore({ getContract })
+    const response1 = store.getResponse('GET', '/api/test')
   })
 })
