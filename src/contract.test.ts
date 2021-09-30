@@ -102,6 +102,91 @@ describe('Contract', () => {
       }
     })
     const store = createMockStore({ getContract })
-    const response1 = store.getResponse('GET', '/api/test')
+    const response = store.getResponse('GET', '/api/test')
+    expect(response?.body).toStrictEqual({ name: 'myName' })
+    expect(response?.status).toEqual(200)
+  })
+
+  test('Mock store with transition', () => {
+    const firstContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/first',
+      params: { path: {}, header: {}, query: {} }
+    }, {
+      withTransition: {
+        body: { name: 'A' },
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        transitions: {
+          otherContract: 'responseB'
+        }
+      }
+    })
+    const otherContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/other',
+      params: { path: {}, header: {}, query: {} }
+    }, {
+      responseA: {
+        body: { name: 'A' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      },
+      responseB: {
+        body: { name: 'B' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const store = createMockStore({ firstContract, otherContract })
+    const response1 = store.getResponse('GET', '/api/other')
+    expect(response1?.body).toStrictEqual({ name: 'A' })
+    store.getResponse('GET', '/api/first')
+    const response2 = store.getResponse('GET', '/api/other')
+    expect(response2?.body).toStrictEqual({ name: 'B' })
+  })
+
+  test('Mock store, path params', () => {
+    const getContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: { id: 'id' }, header: {}, query: {} }
+    }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const store = createMockStore({ getContract })
+    const response = store.getResponse('GET', '/api/test/someId')
+    expect(response?.body).toStrictEqual({ name: 'myName' })
+    expect(response?.status).toEqual(200)
+    const wrongResponse = store.getResponse('GET', '/api/test/someId/error')
+    expect(wrongResponse).toBeUndefined()
+  })
+
+  test('Mock store, query params', () => {
+    const getContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: { s: 'search', lang: 'en' } }
+    }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const store = createMockStore({ getContract })
+    const response1 = store.getResponse('GET', '/api/test?s=something&lang=en')
+    expect(response1?.body).toStrictEqual({ name: 'myName' })
+    expect(response1?.status).toEqual(200)
+    const response2 = store.getResponse('GET', '/api/test?lang=en&s=something')
+    expect(response2?.body).toStrictEqual({ name: 'myName' })
+    const response3 = store.getResponse('GET', '/api/test?lang=en&sa=something')
+    expect(response3?.body).toBeUndefined()
+    const response4 = store.getResponse('GET', '/api/test?lang=en')
+    expect(response4?.body).toBeUndefined()
   })
 })

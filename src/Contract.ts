@@ -39,7 +39,24 @@ export abstract class Contract<TPathParams extends Params, TQueryParams extends 
   }
 
   public GetMockResponse(key: string) {
-    return this.responseExamples[key]
+    return key ? this.responseExamples[key] : Object.values(this.responseExamples)[0]
+  }
+
+  public MatchesUrl(url: string) {
+    if (!url.startsWith(this.request.path)) return false
+    const pathUrlSplit = url.replace(this.request.path, '').split('?')[0].split('/').filter(d => d.trim().length > 0)
+    const params = Object.keys(this.request.params.path)
+    if (pathUrlSplit.length !== params.length) return false
+    const urlQuery = url.split('?')[1]
+    if (urlQuery) {
+      const urlQueryParams = urlQuery.split('&').map(q => q.split('='))
+      const queryParams = Object.keys(this.request.params.query)
+      if (urlQueryParams.length !== queryParams.length) return false
+      for (const uqp of urlQueryParams) {
+        if (!queryParams.some(qp => qp === uqp[0])) return false
+      }
+    }
+    return true
   }
 }
 
@@ -100,12 +117,25 @@ export class PutContract<TPathParams extends Params, TQueryParams extends Params
 export const createMockStore = (contracts: {
   [index: string]: Contract<any, any, any, any, any>
 }) => {
-  const urlMatchesContract = (url: string, contract: Contract<any, any, any, any, any>) => {
-    return true
+  const selectedResponses: { [index: string]: string } = {}
+  const objectToArray = <T>(obj: { [index: string]: T } | undefined) => {
+    if (!obj) return []
+    return Object.keys(obj).map(key => ({
+      key,
+      value: obj[key]
+    }))
   }
   const getResponse = (method: Method, url: string) => {
-    const contract = Object.values(contracts).filter(c => c.method === method).find(c => urlMatchesContract(url, c))
-
+    const arrayOfContracts = objectToArray(contracts)
+    const filteredContractsByMethod = arrayOfContracts.filter(d => d.value.method === method)
+    const contract = filteredContractsByMethod.find(c => c.value.MatchesUrl(url))
+    if (!contract) return undefined
+    const response = contract.value.GetMockResponse(selectedResponses[contract.key])
+    objectToArray(response?.transitions).forEach(transition => selectedResponses[transition.key] = transition.value)
+    return response
   }
-  return { getResponse }
+  const setResponse = (contractKey: string, responseKey: string) => {
+    selectedResponses[contractKey] = responseKey
+  }
+  return { getResponse, setResponse }
 }
