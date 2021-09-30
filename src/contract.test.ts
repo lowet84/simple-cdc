@@ -1,4 +1,12 @@
-import { Contract, createMockStore, DeleteContract, GetContract, PostContract, PutContract } from './Contract'
+import {
+  Contract,
+  createMockStore,
+  DeleteContract,
+  GetContract,
+  PostContract,
+  PutContract,
+  serializeContracts
+} from './Contract'
 import * as path from 'path'
 
 describe('Contract', () => {
@@ -188,5 +196,21 @@ describe('Contract', () => {
     expect(response3?.body).toBeUndefined()
     const response4 = store.getResponse('GET', '/api/test?lang=en')
     expect(response4?.body).toBeUndefined()
+  })
+
+  test('serialize', () => {
+    const getContract = new GetContract('Description', {
+      headers: {},
+      path: '/api/test',
+      params: { path: {}, header: {}, query: { s: 'search', lang: 'en' } }
+    }, {
+      success: {
+        body: { name: 'myName' },
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }
+    })
+    const serialized = serializeContracts({ getContract })
+    expect(serialized).not.toBeUndefined()
   })
 })

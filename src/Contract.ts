@@ -114,6 +114,12 @@ export class PutContract<TPathParams extends Params, TQueryParams extends Params
   }
 }
 
+export const serializeContracts = (contracts: {
+  [index: string]: Contract<any, any, any, any, any>
+}) => {
+  return JSON.stringify(contracts, null, 2)
+}
+
 export const createMockStore = (contracts: {
   [index: string]: Contract<any, any, any, any, any>
 }) => {
